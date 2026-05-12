@@ -5,8 +5,9 @@ WORKDIR /app
 # Copy dependency manifests first for layer caching
 COPY package.json package-lock.json ./
 
-# Copy data dir so the postinstall fetch-mkopo-catalog script skips the download
+# Copy data dir and scripts before npm ci (postinstall needs both)
 COPY data/ ./data/
+COPY scripts/ ./scripts/
 
 # Install production dependencies only
 RUN npm ci --omit=dev
