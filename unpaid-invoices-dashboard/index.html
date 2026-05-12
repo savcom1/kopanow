@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kopanow — Unpaid invoices</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="uid-shell">
+    <header class="uid-top">
+      <div>
+        <h1>Unpaid invoices</h1>
+        <p class="uid-muted">Past-due customer installments and whether each borrower has a reachable FCM token on file.</p>
+      </div>
+      <div class="uid-top__controls">
+        <div class="uid-row" style="min-width: 220px">
+          <label class="uid-label" for="admin-key">x-admin-key (ADMIN_KEY)</label>
+          <input type="password" id="admin-key" class="uid-input" placeholder="Paste admin key" autocomplete="off" />
+        </div>
+        <div class="uid-row" style="min-width: 220px">
+          <label class="uid-label" for="as-of">As of (optional)</label>
+          <input type="datetime-local" id="as-of" class="uid-input" />
+        </div>
+        <div class="uid-actions">
+          <button type="button" class="uid-btn uid-btn--accent" id="btn-refresh">Refresh</button>
+        </div>
+      </div>
+    </header>
+
+    <div id="uid-error" class="uid-error" hidden></div>
+    <p class="uid-meta"><span class="uid-muted">Updated</span> <time id="last-updated">—</time></p>
+
+    <div class="uid-cards" id="uid-cards">
+      <section class="uid-card uid-card--metric">
+        <h2>Overdue customers</h2>
+        <p class="uid-metric" id="metric-borrowers">—</p>
+      </section>
+      <section class="uid-card uid-card--metric">
+        <h2>With FCM token</h2>
+        <p class="uid-metric uid-metric--ok" id="metric-with-fcm">—</p>
+      </section>
+      <section class="uid-card uid-card--metric">
+        <h2>Without FCM token</h2>
+        <p class="uid-metric uid-metric--warn" id="metric-without-fcm">—</p>
+      </section>
+      <section class="uid-card uid-card--metric">
+        <h2>Overdue installment rows</h2>
+        <p class="uid-metric" id="metric-rows">—</p>
+      </section>
+    </div>
+
+    <section class="uid-card">
+      <h2>Borrowers</h2>
+      <div class="uid-table-wrap">
+        <table class="uid-table" id="tbl-borrowers">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Installments</th>
+              <th>Amount due</th>
+              <th>Max days past due</th>
+              <th>FCM</th>
+              <th>Loan IDs</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="uid-foot" id="uid-definition">—</p>
+    <p class="uid-foot uid-muted" id="uid-truncation" hidden></p>
+    <p class="uid-foot uid-muted">API: <code>GET /api/admin/unpaid-invoices/summary</code> — same auth as LoanOverview and Collections (<code>x-admin-key</code>).</p>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

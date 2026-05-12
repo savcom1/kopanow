@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kopanow Admin — Device Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ══════════════════ SIDEBAR ══════════════════ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-name">Kopanow</span>
+      <span class="brand-tag">Admin</span>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-view="dashboard">
+        <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3zm0 8h8v-6H3zm10 0h8V11h-8zm0-18v6h8V3z"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" data-view="devices">
+        <svg viewBox="0 0 24 24"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
+        Devices
+        <span class="badge" id="badge-locked">0</span>
+      </button>
+      <button class="nav-item" data-view="tamper">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        Tamper Log
+        <span class="badge badge-red" id="badge-tamper">0</span>
+      </button>
+      <button class="nav-item" data-view="loans">
+        <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+        Loans
+      </button>
+      <button class="nav-item" data-view="overdue-customers">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        Overdue
+      </button>
+      <button class="nav-item" data-view="mkopo-unsupported">
+        <svg viewBox="0 0 24 24"><path d="M12 18h3v2h-6v-2h3zM6.38 6.56L12 2l5.62 4.56L19 9.33l-1 5.34H6l-1-5.34 1.38-2.77zM8 12h8l.5-2.67L12 6.75 7.5 9.33 8 12z"/></svg>
+        MKOPO requests
+        <span class="badge badge-amber" id="badge-mkopo-unsupported">0</span>
+      </button>
+      <button class="nav-item" data-view="payments">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v4z"/></svg>
+        Payments
+        <span class="badge badge-red" id="badge-payments">0</span>
+      </button>
+      <button class="nav-item" data-view="lipa-transactions">
+        <svg viewBox="0 0 24 24"><path d="M18 17H6v-2h12v2zm0-12H6v2h12V5zm0-2H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 10H6v2h12v-2z"/></svg>
+        Lipa / Till
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="refresh-status">
+        <span class="pulse"></span>
+        <span id="last-refresh">Connecting…</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══════════════════ MAIN CONTENT ══════════════════ -->
+  <main class="main">
+
+    <!-- ── HEADER ── -->
+    <header class="topbar">
+      <h1 class="page-title" id="page-title">Dashboard</h1>
+      <div class="topbar-actions">
+        <label class="key-label" for="admin-dashboard-key">Admin key</label>
+        <input type="password" id="admin-dashboard-key" class="key-input" placeholder="Same as LoanOverview" title="Sent as x-admin-key on every API call" autocomplete="off" />
+        <button type="button" class="btn btn-secondary" id="btn-save-admin-key">Save</button>
+        <input type="text" class="search-box" id="search-input" placeholder="Search by borrower name, ID, loan, or device…" title="Matches registration full name and device fields" />
+        <button class="btn btn-secondary" id="btn-refresh" title="Refresh now">
+          <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></svg>
+          Refresh
+        </button>
+      </div>
+    </header>
+
+    <!-- ══════════ VIEW: DASHBOARD ══════════ -->
+    <section class="view active" id="view-dashboard">
+      <div class="kpi-grid" id="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Devices</div>
+          <div class="kpi-value" id="kpi-total">—</div>
+        </div>
+        <div class="kpi-card kpi-green">
+          <div class="kpi-label">Active</div>
+          <div class="kpi-value" id="kpi-active">—</div>
+        </div>
+        <div class="kpi-card kpi-red">
+          <div class="kpi-label">Locked</div>
+          <div class="kpi-value" id="kpi-locked">—</div>
+        </div>
+        <div class="kpi-card kpi-amber">
+          <div class="kpi-label">Unregistered</div>
+          <div class="kpi-value" id="kpi-unregistered">—</div>
+        </div>
+        <div class="kpi-card kpi-grey">
+          <div class="kpi-label">Admin Removed</div>
+          <div class="kpi-value" id="kpi-removed">—</div>
+        </div>
+        <div class="kpi-card kpi-amber">
+          <div class="kpi-label">Pending cash disbursement</div>
+          <div class="kpi-value" id="kpi-disburse-pending">—</div>
+          <div class="kpi-hint text-muted" id="kpi-disburse-sub" style="font-size:11px;margin-top:4px"></div>
+        </div>
+        <div class="kpi-card kpi-green">
+          <div class="kpi-label">Pending cash-out (ready to send)</div>
+          <div class="kpi-value" id="kpi-disburse-ready">—</div>
+        </div>
+        <div class="kpi-card kpi-amber">
+          <div class="kpi-label">Pending cash-out (needs setup)</div>
+          <div class="kpi-value" id="kpi-disburse-not-ready">—</div>
+        </div>
+      </div>
+
+      <div class="section-title">Recently Seen Devices</div>
+      <div class="table-wrap">
+        <table class="data-table" id="dash-table">
+          <thead>
+            <tr>
+              <th>Borrower</th><th>Loan</th><th>Device ID</th><th>Model</th>
+              <th>Status</th><th>Last Seen</th><th>Outstanding</th><th>Invoices</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="dash-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══════════ VIEW: DEVICES ══════════ -->
+    <section class="view" id="view-devices">
+      <div class="filter-row">
+        <button class="chip active" data-status="all">All</button>
+        <button class="chip" data-status="active">Active</button>
+        <button class="chip" data-status="locked">Locked</button>
+        <button class="chip" data-status="registered">Registered</button>
+        <button class="chip" data-status="admin_removed">Removed</button>
+        <button class="chip" data-status="suspended">Suspended</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="devices-table">
+          <thead>
+            <tr>
+              <th>Borrower</th><th>Loan ID</th><th>Device ID</th><th>Model</th>
+              <th>Status</th><th>DPC</th><th>MDM</th><th>On books</th><th>Last Seen</th>
+              <th>Overdue</th><th>Outstanding</th><th>Installments</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="devices-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="devices-pagination"></div>
+    </section>
+
+    <!-- ══════════ VIEW: TAMPER LOG ══════════ -->
+    <section class="view" id="view-tamper">
+      <div class="filter-row">
+        <button class="chip active" data-sev="all">All Severity</button>
+        <button class="chip chip-critical" data-sev="CRITICAL">Critical</button>
+        <button class="chip chip-high" data-sev="HIGH">High</button>
+        <button class="chip chip-medium" data-sev="MEDIUM">Medium</button>
+        <button class="chip chip-low" data-sev="LOW">Low</button>
+        <button class="chip" data-reviewed="false" style="margin-left:auto">Unreviewed</button>
+      </div>
+      <div class="tamper-list" id="tamper-list"></div>
+    </section>
+
+    <!-- ══════════ VIEW: MKOPO — unsupported phones (catalog gaps) ══════════ -->
+    <section class="view" id="view-mkopo-unsupported">
+      <p class="text-muted" style="margin:0 0 12px;font-size:13px;max-width:720px">
+        Borrowers whose phones are <strong>not</strong> in the bundled MKOPO list tap “Tuma details zangu kwa admin” on registration.
+        Use this list to add tiers in <code>device_mkopo.json</code> and ship an app update.
+      </p>
+      <div class="table-wrap">
+        <table class="data-table" id="mkopo-unsupported-table">
+          <thead>
+            <tr>
+              <th>Submitted</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Brand</th>
+              <th>Model</th>
+              <th>Manufacturer</th>
+              <th>Android</th>
+              <th>App</th>
+              <th>Borrower ID</th>
+              <th>AI price (TSh)</th>
+              <th>Conf</th>
+              <th>Retail (TSh)</th>
+              <th>Max loan</th>
+              <th>First loan</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="mkopo-unsupported-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══════════ VIEW: LOANS ══════════ -->
+    <section class="view" id="view-loans">
+      <div class="filter-row" style="margin-bottom:12px">
+        <button class="chip active" data-disbursement="all" type="button">All loans</button>
+        <button class="chip" data-disbursement="pending" type="button">Incomplete / pending cash-out</button>
+        <button class="chip" data-disbursement="confirmed" type="button">Cash sent</button>
+        <span class="text-muted" style="margin-left:12px;font-size:12px">On books:</span>
+        <button class="chip active" data-protection="all" type="button">All</button>
+        <button class="chip" data-protection="applicants" type="button">Applicants</button>
+        <button class="chip" data-protection="customers" type="button">Customers</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="loans-table">
+          <thead>
+            <tr>
+              <th>Loan ID</th><th>Borrower</th><th>Principal</th>
+              <th>Total / Weekly</th><th>Outstanding</th><th>Next Due</th>
+              <th>Overdue</th><th>Invoices</th><th>Cash out</th>
+              <th>On books</th><th>Device status</th>
+            </tr>
+          </thead>
+          <tbody id="loans-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══════════ VIEW: OVERDUE CUSTOMERS ══════════ -->
+    <section class="view" id="view-overdue-customers">
+      <p class="text-muted" style="margin:0 0 12px;font-size:13px;max-width:900px">
+        Borrowers with unpaid installments whose due date has passed:
+        <strong>pending</strong> with <code>due_date</code> before report time, or invoice <strong>status overdue</strong>.
+        Default scope is loans with <strong>cash disbursement completed</strong>.
+      </p>
+      <div class="filter-row" style="margin-bottom:12px">
+        <button class="chip active" data-overdue-scope="customers" type="button">Customers (cash sent)</button>
+        <button class="chip" data-overdue-scope="all" type="button">All loans</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Borrower</th>
+              <th>Phone</th>
+              <th>Borrower ID</th>
+              <th>Loan(s)</th>
+              <th># Overdue inst.</th>
+              <th>Total due</th>
+              <th>Oldest due</th>
+              <th>Days past (worst)</th>
+            </tr>
+          </thead>
+          <tbody id="overdue-customers-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══════════ VIEW: PAYMENTS ══════════ -->
+    <section class="view" id="view-payments">
+      <div class="filter-row">
+        <button class="chip active" data-pay-status="pending">⏳ Pending</button>
+        <button class="chip" data-pay-status="verified">✓ Verified</button>
+        <button class="chip" data-pay-status="rejected">✗ Rejected</button>
+        <button class="chip" data-pay-status="all">All</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Borrower</th><th>Loan ID</th><th>M-Pesa Ref</th>
+              <th>Amount (TSh)</th><th>Submitted</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="payments-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ══════════ VIEW: LIPA / TILL TRANSACTIONS ══════════ -->
+    <section class="view" id="view-lipa-transactions">
+      <div class="filter-row" style="flex-wrap:wrap;gap:10px;align-items:center">
+        <button class="chip active" data-lipa-claim="all">All</button>
+        <button class="chip" data-lipa-claim="unclaimed">Unclaimed</button>
+        <button class="chip" data-lipa-claim="claimed">Claimed</button>
+        <input type="search" class="search-box" id="lipa-search" placeholder="Search ref, phone, name, till…" title="Filters this list only" style="max-width:280px;margin-left:auto" />
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Occurred</th><th>M-Pesa ref</th><th>Amount</th>
+              <th>Payer phone</th><th>Payer / till</th><th>Channel</th>
+              <th>Applied to</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="lipa-tbody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="lipa-pagination"></div>
+    </section>
+
+  </main>
+
+  <!-- ══════════════════ DEVICE DETAIL MODAL ══════════════════ -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <button class="modal-close" id="modal-close">✕</button>
+      <h2 class="modal-title" id="modal-title">Device Detail</h2>
+      <div class="modal-body" id="modal-body"></div>
+
+      <div class="command-panel">
+        <div class="command-title">Send Command</div>
+        <div class="command-row">
+          <input class="lock-reason-input" id="cmd-lock-reason" placeholder="Lock reason (optional)" />
+          <button class="btn btn-danger"   id="cmd-lock">&#x1F512; Lock</button>
+          <button class="btn btn-green"    id="cmd-unlock">&#x1F513; Unlock</button>
+          <button class="btn btn-amber"    id="cmd-stop-tamper" title="Clears tamper state and stops the lock loop (same command as Unlock)">Stop tamper loop</button>
+          <button class="btn btn-secondary" id="cmd-remove">Remove Admin</button>
+          <button class="btn btn-ghost"    id="cmd-heartbeat">Ping Heartbeat</button>
+        </div>
+
+        <div class="command-title" style="margin-top:16px">System lockscreen PIN</div>
+        <p class="modal-hint">
+          Generates a random PIN on the device and sets it as the real Android lockscreen.
+          No custom UI — the borrower must enter it at the standard Android lock screen.
+        </p>
+        <div class="command-row">
+          <button class="btn btn-amber" id="cmd-set-pin">&#x1F511; Set System PIN</button>
+          <button class="btn btn-ghost" id="cmd-clear-pin">&#x2715; Clear System PIN</button>
+        </div>
+
+        <!-- PIN display box — shown once after Set PIN, auto-clears after 60 s -->
+        <div id="pin-reveal-box" class="pin-reveal-box" style="display:none">
+          <div class="pin-reveal-label">Unlock PIN — read to borrower</div>
+          <div id="pin-reveal-value" class="pin-reveal-value">——</div>
+          <div class="pin-reveal-meta">This PIN will be hidden in <span id="pin-countdown">60</span>s</div>
+        </div>
+
+        <div class="cmd-result" id="cmd-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ CONFIRM LIPA (manual apply) ══════════════════ -->
+  <div class="modal-overlay" id="lipa-confirm-overlay" style="display:none">
+    <div class="modal" style="max-width:440px">
+      <button class="modal-close" id="lipa-confirm-close" type="button">✕</button>
+      <h2 class="modal-title">Confirm transaction</h2>
+      <div class="modal-body" id="lipa-confirm-summary"></div>
+      <p class="modal-hint">Apply this M-Pesa amount to the borrower’s loan (same as verifying a payment).</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+        <input type="text" class="lock-reason-input" id="lipa-confirm-borrower" placeholder="borrower_id" autocomplete="off" />
+        <input type="text" class="lock-reason-input" id="lipa-confirm-loan" placeholder="loan_id" autocomplete="off" />
+      </div>
+      <div class="command-row" style="margin-top:16px">
+        <button class="btn btn-green" id="lipa-confirm-submit" type="button">Apply &amp; link</button>
+        <button class="btn btn-ghost" id="lipa-confirm-cancel" type="button">Cancel</button>
+      </div>
+      <div class="cmd-result" id="lipa-confirm-result"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ MKOPO PRICING MODAL ══════════════════ -->
+  <div class="modal-overlay" id="mkopo-price-overlay" style="display:none">
+    <div class="modal" style="max-width:560px">
+      <button class="modal-close" id="mkopo-price-close" type="button">✕</button>
+      <h2 class="modal-title" id="mkopo-price-title">MKOPO pricing</h2>
+      <div class="modal-body" id="mkopo-price-body"></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+        <div class="text-muted" style="font-size:12px">Manual override (stores FX + recomputes derived loans)</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <input type="number" class="lock-reason-input" id="mkopo-retail-amount" placeholder="retail_price_amount" step="1" />
+          <input type="text" class="lock-reason-input" id="mkopo-retail-currency" placeholder="currency (e.g. TZS, USD)" style="max-width:180px" />
+          <input type="number" class="lock-reason-input" id="mkopo-fx-rate" placeholder="fx_rate_to_tzs" step="0.0001" />
+        </div>
+        <input type="text" class="lock-reason-input" id="mkopo-priced-by" placeholder="priced_by (optional)" />
+        <input type="text" class="lock-reason-input" id="mkopo-pricing-notes" placeholder="pricing_notes (optional)" />
+      </div>
+      <div class="command-row" style="margin-top:16px">
+        <button class="btn btn-secondary" id="mkopo-ai-fetch" type="button">Fetch price (AI)</button>
+        <button class="btn btn-green" id="mkopo-price-save" type="button">Save pricing</button>
+        <button class="btn btn-ghost" id="mkopo-price-cancel" type="button">Cancel</button>
+      </div>
+      <div class="cmd-result" id="mkopo-price-result"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ TOAST ══════════════════ -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

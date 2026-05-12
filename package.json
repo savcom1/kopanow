@@ -1,0 +1,23 @@
+{
+  "name": "kopanow-backend",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Kopanow API — loan, admin, accounting, lipa routes",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "postinstall": "node scripts/fetch-mkopo-catalog.mjs",
+    "test": "node --test helpers/mkopoResolve.test.js helpers/deviceEnrollment.test.js helpers/renewalPrincipal.test.js helpers/mkopoRetailPricing.test.js helpers/aiRetailPriceTz.test.js helpers/anthropicPhonePrice.test.js helpers/customersWorkflowKpi.test.js helpers/loanoverviewDisbursementBreakdown.test.js helpers/collectionsDueCustomers.test.js helpers/customerFcmReachability.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "firebase-admin": "^13.8.0",
+    "node-cron": "^3.0.3"
+  }
+}

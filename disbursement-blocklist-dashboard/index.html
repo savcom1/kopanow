@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kopanow — Disbursement blocklist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bl-shell">
+    <header class="bl-top">
+      <div>
+        <h1>Disbursement blocklist</h1>
+        <p class="bl-muted">Blocked phones and devices cannot join <code>cash_disbursement_queue</code> or confirm cash disbursement.</p>
+      </div>
+      <div class="bl-row" style="min-width: 220px">
+        <label class="bl-label" for="admin-key">x-admin-key (ADMIN_KEY)</label>
+        <input type="password" id="admin-key" class="bl-input" placeholder="Paste admin key" autocomplete="off" />
+      </div>
+    </header>
+
+    <div id="bl-error" class="bl-error" hidden></div>
+
+    <div class="bl-grid">
+      <section class="bl-card">
+        <h2>Blocked phones</h2>
+        <div class="bl-row">
+          <label class="bl-label" for="add-phone">Phone (TZ)</label>
+          <input type="text" id="add-phone" class="bl-input" placeholder="07… or 255…" />
+        </div>
+        <div class="bl-row">
+          <label class="bl-label" for="add-phone-note">Note (optional)</label>
+          <textarea id="add-phone-note" class="bl-input" placeholder="Reason"></textarea>
+        </div>
+        <div class="bl-actions">
+          <button type="button" class="bl-btn bl-btn--accent" id="btn-add-phone">Add phone</button>
+        </div>
+        <div class="bl-table-wrap" style="margin-top: 1rem">
+          <table class="bl-table" id="tbl-phones">
+            <thead>
+              <tr>
+                <th>Phone</th>
+                <th>Note</th>
+                <th>Added</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="bl-card">
+        <h2>Blocked devices</h2>
+        <div class="bl-row">
+          <label class="bl-label" for="add-device-id">device_id (optional)</label>
+          <input type="text" id="add-device-id" class="bl-input" placeholder="Android device id" />
+        </div>
+        <div class="bl-row">
+          <label class="bl-label" for="add-imei">IMEI (optional)</label>
+          <input type="text" id="add-imei" class="bl-input" placeholder="15 digits" />
+        </div>
+        <p class="bl-muted" style="margin: 0 0 0.5rem; font-size: 0.75rem">At least one of device_id or IMEI is required.</p>
+        <div class="bl-row">
+          <label class="bl-label" for="add-dev-note">Note (optional)</label>
+          <textarea id="add-dev-note" class="bl-input" placeholder="Reason"></textarea>
+        </div>
+        <div class="bl-actions">
+          <button type="button" class="bl-btn bl-btn--accent" id="btn-add-device">Add device</button>
+        </div>
+        <div class="bl-table-wrap" style="margin-top: 1rem">
+          <table class="bl-table" id="tbl-devices">
+            <thead>
+              <tr>
+                <th>device_id</th>
+                <th>IMEI</th>
+                <th>Note</th>
+                <th>Added</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div class="bl-actions">
+      <button type="button" class="bl-btn bl-btn--ghost" id="btn-refresh">Refresh lists</button>
+    </div>
+
+    <p class="bl-foot">API: <code>GET/POST/DELETE /api/accounting/disbursement-blocklist</code> — same auth as accounting (<code>x-admin-key</code> or <code>x-accounting-key</code>).</p>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

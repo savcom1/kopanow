@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kopanow — Collections</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400..600&family=Syne:wght@600..800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="cd-app">
+  <div class="cd-backdrop" id="cd-backdrop" aria-hidden="true"></div>
+
+  <aside class="cd-sidebar" id="cd-sidebar" aria-label="Main navigation">
+    <div class="cd-sidebar__brand">
+      <span class="cd-sidebar__mark" aria-hidden="true">K</span>
+      <span class="cd-sidebar__wordmark">Kopanow</span>
+    </div>
+    <nav class="cd-sidebar__nav">
+      <a class="cd-navlink cd-navlink--active" href="index.html" aria-current="page">
+        <i data-lucide="wallet" class="cd-navlink__icon" aria-hidden="true"></i>
+        <span class="cd-navlink__text">Collections</span>
+      </a>
+      <a class="cd-navlink" href="/loanoverview/">
+        <i data-lucide="layout-dashboard" class="cd-navlink__icon" aria-hidden="true"></i>
+        <span class="cd-navlink__text">LoanOverview</span>
+      </a>
+      <span class="cd-navlink cd-navlink--disabled" title="Coming soon">
+        <i data-lucide="line-chart" class="cd-navlink__icon" aria-hidden="true"></i>
+        <span class="cd-navlink__text">Reports</span>
+      </span>
+    </nav>
+    <button type="button" class="cd-sidebar__collapse" id="cd-sidebar-toggle" aria-pressed="false" title="Collapse sidebar">
+      <i data-lucide="panel-left-close" class="cd-icon-expand" aria-hidden="true"></i>
+      <i data-lucide="panel-left-open" class="cd-icon-collapse" aria-hidden="true"></i>
+    </button>
+  </aside>
+
+  <div class="cd-shell">
+    <header class="cd-topbar">
+      <div class="cd-topbar__left">
+        <button type="button" class="cd-iconbtn cd-topbar__menu" id="cd-nav-toggle" aria-label="Open menu" aria-expanded="false">
+          <i data-lucide="menu" aria-hidden="true"></i>
+        </button>
+        <nav class="cd-breadcrumb" aria-label="Breadcrumb">
+          <span>Admin</span>
+          <span class="cd-breadcrumb__sep" aria-hidden="true">/</span>
+          <span class="cd-breadcrumb__here">Collections</span>
+        </nav>
+      </div>
+      <div class="cd-topbar__meta">
+        <span class="cd-topbar__updated"><span class="cd-muted">Updated</span> <time id="last-updated">—</time></span>
+        <button type="button" class="cd-iconbtn" aria-label="Notifications" title="No new notifications">
+          <i data-lucide="bell" aria-hidden="true"></i>
+        </button>
+        <div class="cd-avatar" id="cd-avatar" title="Session">KO</div>
+      </div>
+    </header>
+
+    <main class="cd-main" id="cd-main" aria-busy="false">
+      <div class="cd-error" id="cd-error" role="alert" hidden></div>
+
+      <section class="cd-filters cd-filters--open cd-card cd-animate-in" style="--i:0">
+        <button type="button" class="cd-filters__toggle" id="cd-filters-toggle" aria-expanded="true">
+          <i data-lucide="sliders-horizontal" aria-hidden="true"></i>
+          <span>Filters</span>
+          <i data-lucide="chevron-down" class="cd-filters__chev" aria-hidden="true"></i>
+        </button>
+        <p class="cd-filters__summary cd-muted" id="cd-filters-summary">Lipa = all rows ≤ cut-off. Scheduled installment amounts include paid + open rows for loans with cashier-completed cash only (not applications). Live cut-off uses server time each refresh.</p>
+        <div class="cd-filters__panel" id="cd-filters-panel">
+          <div class="cd-filters__grid">
+            <label class="cd-field cd-field--wide">
+              <span class="cd-label">Admin key</span>
+              <input type="password" id="admin-key" class="cd-input" placeholder="x-admin-key" autocomplete="off" />
+            </label>
+            <label class="cd-field">
+              <span class="cd-label">As of (when pinned)</span>
+              <input type="datetime-local" id="as-of" class="cd-input" title="Used only when live cut-off is off" />
+            </label>
+            <label class="cd-check cd-field--wide">
+              <input type="checkbox" id="cd-live-as-of" checked />
+              <span>Live cut-off (server time each refresh — recommended)</span>
+            </label>
+            <label class="cd-field">
+              <span class="cd-label">Rolling window</span>
+              <select id="cd-window" class="cd-input">
+                <option value="day">Last 24 hours</option>
+                <option value="week">Last 7 days</option>
+                <option value="month">Last 30 days</option>
+              </select>
+            </label>
+            <label class="cd-field">
+              <span class="cd-label">From (optional)</span>
+              <input type="datetime-local" id="from" class="cd-input" />
+            </label>
+            <label class="cd-field">
+              <span class="cd-label">To (optional)</span>
+              <input type="datetime-local" id="to" class="cd-input" />
+            </label>
+            <button type="button" class="cd-btn cd-btn--accent" id="btn-refresh">
+              <i data-lucide="refresh-cw" aria-hidden="true"></i>
+              Refresh
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div class="cd-skeleton" id="cd-skeleton" aria-hidden="true">
+        <div class="cd-skeleton__kpis">
+          <div class="cd-skeleton__block"></div>
+          <div class="cd-skeleton__block"></div>
+          <div class="cd-skeleton__block"></div>
+          <div class="cd-skeleton__block"></div>
+        </div>
+        <div class="cd-skeleton__charts">
+          <div class="cd-skeleton__block cd-skeleton__block--wide"></div>
+          <div class="cd-skeleton__block"></div>
+        </div>
+        <div class="cd-skeleton__block cd-skeleton__block--table"></div>
+      </div>
+
+      <div class="cd-dashboard" id="cd-dashboard">
+        <section class="cd-kpi-row">
+          <article class="cd-card cd-kpi cd-animate-in" style="--i:1">
+            <div class="cd-kpi__top">
+              <span class="cd-kpi__icon"><i data-lucide="banknote" aria-hidden="true"></i></span>
+              <span class="cd-kpi__trend" id="cd-trend-received">—</span>
+            </div>
+            <h2 class="cd-kpi__label">Money received</h2>
+            <p class="cd-kpi__value" id="cd-val-received">—</p>
+            <p class="cd-kpi__sub" id="cd-sub-received">—</p>
+            <svg class="cd-kpi__spark" id="cd-spark-received" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true"></svg>
+          </article>
+          <article class="cd-card cd-kpi cd-animate-in" style="--i:2">
+            <div class="cd-kpi__top">
+              <span class="cd-kpi__icon"><i data-lucide="activity" aria-hidden="true"></i></span>
+              <span class="cd-kpi__trend" id="cd-trend-rolling">—</span>
+            </div>
+            <h2 class="cd-kpi__label">Rolling Lipa</h2>
+            <p class="cd-kpi__value" id="cd-val-rolling">—</p>
+            <p class="cd-kpi__sub" id="cd-sub-rolling">—</p>
+            <svg class="cd-kpi__spark" id="cd-spark-rolling" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true"></svg>
+          </article>
+          <article class="cd-card cd-kpi cd-animate-in" style="--i:3">
+            <div class="cd-kpi__top">
+              <span class="cd-kpi__icon"><i data-lucide="calendar-clock" aria-hidden="true"></i></span>
+              <span class="cd-kpi__trend" id="cd-trend-scheduled">—</span>
+            </div>
+            <h2 class="cd-kpi__label">Scheduled (through today)</h2>
+            <p class="cd-kpi__value" id="cd-val-scheduled">—</p>
+            <p class="cd-kpi__sub" id="cd-sub-scheduled">—</p>
+            <svg class="cd-kpi__spark" id="cd-spark-scheduled" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true"></svg>
+          </article>
+          <article class="cd-card cd-kpi cd-animate-in" style="--i:4">
+            <div class="cd-kpi__top">
+              <span class="cd-kpi__icon"><i data-lucide="percent" aria-hidden="true"></i></span>
+              <span class="cd-kpi__trend" id="cd-trend-match">—</span>
+            </div>
+            <h2 class="cd-kpi__label">Claimed share</h2>
+            <p class="cd-kpi__value" id="cd-val-match">—</p>
+            <p class="cd-kpi__sub" id="cd-sub-match">—</p>
+            <svg class="cd-kpi__spark" id="cd-spark-match" viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true"></svg>
+          </article>
+        </section>
+
+        <div class="cd-chip-row cd-animate-in" style="--i:5">
+          <span class="cd-chip" id="chip-as-of">—</span>
+          <span class="cd-chip cd-chip--muted" id="cd-chip-match-mode">—</span>
+        </div>
+
+        <section class="cd-card cd-due-customers cd-animate-in" style="--i:5">
+          <div class="cd-due-customers__head">
+            <h2 class="cd-due-customers__title">Installment due customers</h2>
+            <p class="cd-muted" id="cd-due-customers-sub">Cash-sent loans only · due through today in local TZ</p>
+          </div>
+          <div class="cd-due-customers__grid">
+            <article class="cd-mini-stat">
+              <div class="cd-mini-stat__label">Due reached</div>
+              <div class="cd-mini-stat__value" id="cd-due-reached">—</div>
+              <div class="cd-mini-stat__sub" id="cd-due-reached-sub">—</div>
+            </article>
+            <article class="cd-mini-stat">
+              <div class="cd-mini-stat__label">Paid</div>
+              <div class="cd-mini-stat__value" id="cd-due-paid">—</div>
+              <div class="cd-mini-stat__sub">All due-window installments paid</div>
+            </article>
+            <article class="cd-mini-stat">
+              <div class="cd-mini-stat__label">Overdue unpaid</div>
+              <div class="cd-mini-stat__value" id="cd-due-overdue">—</div>
+              <div class="cd-mini-stat__sub" id="cd-due-overdue-sub">Same scope as Unpaid invoices</div>
+            </article>
+            <article class="cd-mini-stat">
+              <div class="cd-mini-stat__label">Open due</div>
+              <div class="cd-mini-stat__value" id="cd-due-open">—</div>
+              <div class="cd-mini-stat__sub">Due but not yet overdue unpaid</div>
+            </article>
+          </div>
+          <div class="cd-due-customers__grid cd-due-customers__grid--fcm">
+            <article class="cd-mini-stat">
+              <div class="cd-mini-stat__label">No FCM token</div>
+              <div class="cd-mini-stat__value" id="cd-fcm-without">—</div>
+              <div class="cd-mini-stat__sub" id="cd-fcm-without-sub">All cash-sent customers</div>
+            </article>
+            <article class="cd-mini-stat">
+              <div class="cd-mini-stat__label">With FCM token</div>
+              <div class="cd-mini-stat__value" id="cd-fcm-with">—</div>
+              <div class="cd-mini-stat__sub" id="cd-fcm-with-sub">All cash-sent customers</div>
+            </article>
+            <article class="cd-mini-stat">
+              <div class="cd-mini-stat__label">Admin removed</div>
+              <div class="cd-mini-stat__value" id="cd-fcm-admin-removed">—</div>
+              <div class="cd-mini-stat__sub" id="cd-fcm-admin-removed-sub">No FCM token · device admin removed</div>
+            </article>
+            <article class="cd-mini-stat">
+              <div class="cd-mini-stat__label">Overdue · no FCM</div>
+              <div class="cd-mini-stat__value" id="cd-fcm-overdue-without">—</div>
+              <div class="cd-mini-stat__sub">Same scope as Unpaid invoices</div>
+            </article>
+          </div>
+          <div class="cd-fcm-report">
+            <div class="cd-fcm-report__head">
+              <h3 class="cd-fcm-report__title">No FCM breakdown</h3>
+              <p class="cd-muted" id="cd-fcm-report-sub">Cash-sent customers unreachable by push · grouped by device state</p>
+            </div>
+            <div class="cd-due-customers__grid cd-due-customers__grid--fcm-categories" id="cd-fcm-category-grid"></div>
+            <div class="cd-table-wrap cd-fcm-report__table-wrap">
+              <table class="cd-table" id="cd-fcm-report-table">
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Borrower</th>
+                    <th>Loan IDs</th>
+                    <th>Device status</th>
+                    <th>Loan device status</th>
+                    <th>Device updated</th>
+                  </tr>
+                </thead>
+                <tbody id="cd-fcm-report-body"></tbody>
+              </table>
+            </div>
+            <div class="cd-empty cd-empty--table" id="cd-fcm-report-empty" hidden>
+              <i data-lucide="radio" aria-hidden="true"></i>
+              <p class="cd-empty__title">All customers reachable</p>
+              <p class="cd-empty__text">Every cash-sent borrower has a non-empty FCM token on a linked device.</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="cd-alert cd-alert--warn" id="truncation-warn" role="status" hidden></div>
+
+        <section class="cd-chart-grid cd-animate-in" style="--i:6">
+          <div class="cd-card cd-chart cd-chart--primary">
+            <div class="cd-chart__head">
+              <h2 class="cd-chart__title">All Lipa received trend</h2>
+              <span class="cd-chart__hint cd-muted">History of grand <code>SUM(amount)</code> (all rows ≤ as_of) · refreshes every 10 minutes</span>
+            </div>
+            <div class="cd-chart__canvas">
+              <svg id="cd-chart-area" class="cd-chart__svg" viewBox="0 0 640 220" role="img" aria-label="Money received over recent refreshes"></svg>
+              <div class="cd-empty cd-empty--chart" id="cd-chart-area-empty">
+                <i data-lucide="trending-up" aria-hidden="true"></i>
+                <p class="cd-empty__title">No trend yet</p>
+                <p class="cd-empty__text">Chart fills after a second refresh or the next 10-minute poll.</p>
+              </div>
+            </div>
+          </div>
+          <div class="cd-card cd-chart cd-chart--secondary">
+            <div class="cd-chart__head">
+              <h2 class="cd-chart__title">Lipa flow (claimed vs unclaimed)</h2>
+            </div>
+            <div class="cd-chart__canvas cd-chart__canvas--donut">
+              <svg id="cd-chart-donut" class="cd-donut" viewBox="0 0 200 200" role="img" aria-label="Share of Lipa amount claimed versus unclaimed"></svg>
+              <div class="cd-donut__legend" id="cd-donut-legend"></div>
+              <div class="cd-empty cd-empty--donut" id="cd-chart-donut-empty" hidden>
+                <p class="cd-empty__title">No split</p>
+                <p class="cd-empty__text">Both totals are zero.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="cd-card cd-table-card cd-animate-in" style="--i:7">
+          <div class="cd-table-card__head">
+            <h2 class="cd-table-card__title">Recent Lipa</h2>
+            <span class="cd-muted">Ingested ≤ as_of · latest rows · <code>amount</code> column</span>
+          </div>
+          <div class="cd-table-wrap">
+            <table class="cd-table" id="lipa-transactions-table">
+              <thead>
+                <tr>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Ref</th>
+                  <th>Ingested</th>
+                  <th>Till</th>
+                  <th>Business</th>
+                </tr>
+              </thead>
+              <tbody id="lipa-transactions-body"></tbody>
+            </table>
+          </div>
+          <div class="cd-empty cd-empty--table" id="lipa-transactions-empty" hidden>
+            <i data-lucide="inbox" aria-hidden="true"></i>
+            <p class="cd-empty__title">No rows</p>
+            <p class="cd-empty__text">No Lipa rows ingested on or before the as-of time.</p>
+          </div>
+        </section>
+
+        <footer class="cd-footer cd-card cd-animate-in" style="--i:8">
+          <div class="cd-footer__row">
+            <span class="cd-muted">Debug</span>
+            <button type="button" class="cd-btn cd-btn--ghost" id="btn-toggle-raw">Raw JSON</button>
+          </div>
+          <pre class="cd-code" id="raw-out" hidden></pre>
+          <p class="cd-footer__hint cd-muted">
+            <code>x-admin-key</code> matches server <code>ADMIN_KEY</code>. Money received uses all
+            <code>lipa_transactions.amount</code> with <code>ingested_at ≤ as_of</code>; rolling uses the same full table inside the time window.
+            Scheduled sums <code>pending</code>, <code>overdue</code>, and <code>paid</code> invoices with <code>due_date</code> through end of that calendar day (default TZ <code>Africa/Dar_es_Salaam</code>; set <code>KOPANOW_SCHEDULED_INVOICE_TZ</code> on the server to change), for loans in <code>cash_disbursement_queue</code> with <code>status = completed</code> only (cash sent — applications excluded). Installment due customers counts unique borrowers in that same due window; overdue unpaid matches the Unpaid invoices dashboard (open pending/overdue installments past due on customer loans). Add <code>?debug_lipa=1</code> for sample Lipa rows.
+          </p>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kopanow Accounting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-name">Kopanow</span>
+      <span class="brand-tag">Accounting</span>
+    </div>
+    <nav class="nav">
+      <button type="button" class="nav-item active" data-view="home">Home</button>
+      <button type="button" class="nav-item" data-view="customers">Customers</button>
+      <button type="button" class="nav-item" data-view="loans">Loans</button>
+      <button type="button" class="nav-item" data-view="cash-disburse">Cash disbursement</button>
+      <button type="button" class="nav-item" data-view="cash">Cash receipts (Lipa)</button>
+      <button type="button" class="nav-item" data-view="reports">Reports</button>
+      <button type="button" class="nav-item" data-view="queues">Queues</button>
+      <button type="button" class="nav-item" data-view="audit">Audit log</button>
+      <button type="button" class="nav-item" data-view="purge">Purge borrower</button>
+    </nav>
+    <div class="sidebar-footer">
+      <p class="hint">Separate from <a href="/admin/">Admin (ops)</a></p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <h1 class="page-title" id="page-title">Home</h1>
+      <div class="topbar-actions">
+        <label class="key-label">Admin key</label>
+        <input type="password" id="api-key" class="key-input" placeholder="Same as Admin / LoanOverview" autocomplete="off" />
+        <button type="button" class="btn btn-secondary" id="btn-save-key">Save</button>
+      </div>
+    </header>
+
+    <section class="view active" id="view-home">
+      <div class="card">
+        <h2>Books &amp; loan records</h2>
+        <p class="muted">Collections are based on <strong>lipa_transactions</strong> (all borrower inbound payments). Use <strong>ingested_at</strong> for the collections date range.</p>
+        <p class="muted">Edits to borrowers and loans are audited. Enter a <strong>reason</strong> on every change.</p>
+        <h3 class="mt">Portfolio at risk (PAR)</h3>
+        <p class="muted kpi-sub">Balance-weighted: loans with an unpaid installment past due by ≥N days contribute full <code>outstanding_amount</code> to PARn. Denominator = all loans with outstanding &gt; 0.</p>
+        <div class="kpi-grid" id="par-kpi-grid">
+          <div class="kpi-card"><div class="kpi-label">PAR1 %</div><div class="kpi-val" id="kpi-par1">—</div><div class="kpi-sub" id="kpi-par1-bal"></div></div>
+          <div class="kpi-card"><div class="kpi-label">PAR30 %</div><div class="kpi-val" id="kpi-par30">—</div><div class="kpi-sub" id="kpi-par30-bal"></div></div>
+          <div class="kpi-card"><div class="kpi-label">PAR90 %</div><div class="kpi-val" id="kpi-par90">—</div><div class="kpi-sub" id="kpi-par90-bal"></div></div>
+          <div class="kpi-card"><div class="kpi-label">Gross portfolio</div><div class="kpi-val" id="kpi-portfolio">—</div><div class="kpi-sub" id="kpi-par30-count"></div></div>
+        </div>
+        <p class="muted"><button type="button" class="btn btn-secondary" id="btn-refresh-par">Refresh PAR</button> <span id="par-as-of"></span></p>
+      </div>
+    </section>
+
+    <section class="view" id="view-customers">
+      <p class="muted" style="margin:0 0 12px;font-size:12px">Borrowers with at least one loan where <strong>cash disbursement was confirmed</strong> (principal sent on the books). Applicants who have not been sent funds do not appear here.</p>
+      <div class="toolbar">
+        <input type="search" id="customer-search" class="search-box" placeholder="Search name, phone, borrower id…" />
+        <button type="button" class="btn btn-primary" id="btn-search-customers">Search</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="table-customers">
+          <thead><tr><th>Borrower ID</th><th>Name</th><th>Phone</th><th>Region</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card mt" id="customer-detail" hidden>
+        <h3 id="customer-detail-title">Customer</h3>
+        <form id="form-edit-customer" class="form-grid">
+          <label>Full name <input name="full_name" type="text" /></label>
+          <label>Phone <input name="phone" type="text" /></label>
+          <label>National ID <input name="national_id" type="text" /></label>
+          <label>Region <input name="region" type="text" /></label>
+          <label>Address <input name="address" type="text" /></label>
+          <label class="full">Reason (required) <input name="reason" type="text" required placeholder="Why this change" /></label>
+          <label>Actor <input name="actor" type="text" placeholder="Your name or staff id" /></label>
+          <div class="full">
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="view" id="view-loans">
+      <div class="toolbar">
+        <input type="search" id="loan-search" class="search-box" placeholder="Search loan, borrower…" />
+        <button type="button" class="btn btn-primary" id="btn-search-loans">Search</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="table-loans">
+          <thead><tr><th>Loan ID</th><th>Borrower</th><th>Outstanding</th><th>Next due</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card mt" id="loan-detail" hidden>
+        <h3 id="loan-detail-title">Loan</h3>
+        <div id="loan-detail-meta" class="muted"></div>
+        <div class="muted" id="loan-edit-hint" style="margin-top:6px">
+          Tip: if you change or delete invoices, you may need to update <code>outstanding_amount</code> too.
+        </div>
+        <h4>Adjust outstanding</h4>
+        <form id="form-outstanding" class="form-row">
+          <input name="outstanding_amount" type="number" step="0.01" min="0" />
+          <input name="reason" type="text" placeholder="Reason" required />
+          <input name="actor" type="text" placeholder="Actor" />
+          <button type="submit" class="btn btn-primary">Apply</button>
+        </form>
+        <div class="form-row" style="margin-top:10px">
+          <button type="button" class="btn btn-secondary" id="btn-sync-outstanding">
+            Set outstanding = sum(unpaid invoices)
+          </button>
+        </div>
+        <h4>Adjust principal</h4>
+        <form id="form-principal" class="form-row">
+          <input name="principal_amount" type="number" step="0.01" min="0" />
+          <input name="reason" type="text" placeholder="Reason" required />
+          <input name="actor" type="text" placeholder="Actor" />
+          <button type="submit" class="btn btn-primary">Apply</button>
+        </form>
+        <h4>Adjust total repayment</h4>
+        <form id="form-total-repayment" class="form-row">
+          <input name="total_repayment_amount" type="number" step="0.01" min="0" />
+          <input name="reason" type="text" placeholder="Reason" required />
+          <input name="actor" type="text" placeholder="Actor" />
+          <button type="submit" class="btn btn-primary">Apply</button>
+        </form>
+        <h4>Installments</h4>
+        <div class="table-wrap">
+          <table class="data-table" id="table-invoices">
+            <thead><tr><th>#</th><th>Due</th><th>Amount</th><th>Status</th><th>Adjust</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-cash-disburse">
+      <div class="toolbar">
+        <p class="muted" style="flex:1;margin:0">Loans on the <strong>cash disbursement queue</strong> (first time all required protections OK, principal not yet confirmed sent). Confirm here after the cashier sends funds. Confirmed loans count toward portfolio reporting (PAR, aging, etc.).</p>
+        <button type="button" class="btn btn-secondary" id="btn-pending-disburse-refresh">Refresh</button>
+      </div>
+      <div class="table-wrap scroll">
+        <table class="data-table" id="table-pending-disburse">
+          <thead>
+            <tr>
+              <th>Loan ID</th>
+              <th>Borrower</th>
+              <th>Principal</th>
+              <th>Created</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="view" id="view-cash">
+      <div class="toolbar">
+        <select id="lipa-claim">
+          <option value="all">All</option>
+          <option value="claimed">Claimed</option>
+          <option value="unclaimed">Unclaimed</option>
+        </select>
+        <input type="search" id="lipa-search" class="search-box" placeholder="Ref, phone…" />
+        <button type="button" class="btn btn-primary" id="btn-lipa-refresh">Refresh</button>
+      </div>
+      <div class="table-wrap scroll">
+        <table class="data-table" id="table-lipa">
+          <thead><tr><th>When</th><th>Amount</th><th>Ref</th><th>Phone</th><th>Claimed loan</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="view" id="view-reports">
+      <div class="card">
+        <h3>Collections (Lipa, by ingested date)</h3>
+        <div class="form-row">
+          <label>From <input type="date" id="rep-from" /></label>
+          <label>To <input type="date" id="rep-to" /></label>
+          <button type="button" class="btn btn-primary" id="btn-collections-run">Run</button>
+          <button type="button" class="btn btn-secondary" id="btn-collections-csv">Download CSV</button>
+        </div>
+        <pre id="collections-out" class="code-block"></pre>
+      </div>
+      <div class="card mt">
+        <h3>AR aging (pending + overdue invoices)</h3>
+        <button type="button" class="btn btn-primary" id="btn-aging-run">Run</button>
+        <button type="button" class="btn btn-secondary" id="btn-aging-csv">Download CSV</button>
+        <pre id="aging-out" class="code-block"></pre>
+      </div>
+      <div class="card mt">
+        <h3>PAR (detail)</h3>
+        <p class="muted">Same KPI as Home; JSON includes definitions.</p>
+        <button type="button" class="btn btn-primary" id="btn-par-run">Run</button>
+        <pre id="par-out" class="code-block"></pre>
+      </div>
+      <div class="card mt">
+        <h3>Expected vs actual (schedule vs Lipa)</h3>
+        <p class="muted">Expected = installments with <strong>due_date</strong> in range. Actual = <strong>Lipa</strong> rows with <strong>ingested_at</strong> in range (by claimed loan).</p>
+        <div class="form-row">
+          <label>From <input type="date" id="eva-from" /></label>
+          <label>To <input type="date" id="eva-to" /></label>
+          <button type="button" class="btn btn-primary" id="btn-eva-run">Run</button>
+          <button type="button" class="btn btn-secondary" id="btn-eva-csv">Download CSV</button>
+        </div>
+        <pre id="eva-out" class="code-block"></pre>
+      </div>
+      <div class="card mt">
+        <h3>Disbursement register</h3>
+        <div class="form-row">
+          <label>From <input type="date" id="dis-from" /></label>
+          <label>To <input type="date" id="dis-to" /></label>
+          <button type="button" class="btn btn-primary" id="btn-dis-run">Run</button>
+          <button type="button" class="btn btn-secondary" id="btn-dis-csv">Download CSV</button>
+        </div>
+        <pre id="dis-out" class="code-block"></pre>
+      </div>
+      <div class="card mt">
+        <h3>Upcoming installments (maturity window)</h3>
+        <p class="muted">Pending/overdue installments with due date within N days from now.</p>
+        <div class="form-row">
+          <label>Within days <input type="number" id="mat-days" value="30" min="1" max="365" /></label>
+          <button type="button" class="btn btn-primary" id="btn-mat-run">Run</button>
+          <button type="button" class="btn btn-secondary" id="btn-mat-csv">Download CSV</button>
+        </div>
+        <pre id="mat-out" class="code-block"></pre>
+      </div>
+    </section>
+
+    <section class="view" id="view-purge">
+      <div class="card">
+        <h3>Borrower data purge</h3>
+        <p class="muted">
+          This permanently deletes a borrower’s details and related records. This action is irreversible.
+        </p>
+        <div class="toolbar">
+          <input type="search" id="purge-search" class="search-box" placeholder="Search name, phone, borrower id, national id…" />
+          <button type="button" class="btn btn-primary" id="btn-purge-search">Search</button>
+        </div>
+        <div class="table-wrap scroll short">
+          <table class="data-table" id="table-purge-matches">
+            <thead><tr><th>Name</th><th>Phone</th><th>National ID</th><th>Borrower ID</th><th>Region</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card mt" id="purge-detail" hidden>
+        <h3 id="purge-detail-title">Selected borrower</h3>
+        <div class="muted" id="purge-detail-sub"></div>
+        <form id="form-purge-borrower" class="form-grid" style="margin-top:10px">
+          <label class="full">Reason (required) <input name="reason" type="text" required placeholder="Why this purge is needed" autocomplete="off" /></label>
+          <label>Actor (required) <input name="actor" type="text" required placeholder="Your name or staff id" autocomplete="off" /></label>
+          <label class="full">
+            Type the Borrower ID to confirm
+            <input name="confirm_borrower_id" type="text" required placeholder="Borrower ID" autocomplete="off" />
+          </label>
+          <div class="full">
+            <button type="submit" class="btn btn-primary" id="btn-purge-confirm" disabled>Permanently purge borrower</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="view" id="view-queues">
+      <div class="grid-2">
+        <div class="card">
+          <h3>Unmatched Lipa</h3>
+          <button type="button" class="btn btn-secondary" id="btn-queue-lipa">Refresh</button>
+          <div class="table-wrap scroll short">
+            <table class="data-table" id="table-queue-lipa"><thead><tr><th>Ingested</th><th>Amt</th><th>Ref</th><th>Phone</th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Pending payment references</h3>
+          <button type="button" class="btn btn-secondary" id="btn-queue-refs">Refresh</button>
+          <div class="table-wrap scroll short">
+            <table class="data-table" id="table-queue-refs"><thead><tr><th>Submitted</th><th>Ref</th><th>Loan</th><th>Borrower</th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-audit">
+      <button type="button" class="btn btn-secondary" id="btn-audit-refresh">Refresh</button>
+      <div class="table-wrap scroll">
+        <table class="data-table" id="table-audit">
+          <thead><tr><th>When</th><th>Actor</th><th>Entity</th><th>Action</th><th>Reason</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div id="modal-cash-disburse" class="modal-backdrop" hidden aria-hidden="true">
+      <div class="modal-panel" role="dialog" aria-labelledby="modal-cash-title">
+        <h3 id="modal-cash-title">Confirm cash disbursement</h3>
+        <p class="muted" id="modal-cash-loan-line"></p>
+        <form id="form-cash-disburse">
+          <label class="full">Actor (required) <input name="actor" type="text" required placeholder="Staff id or name" autocomplete="off" /></label>
+          <label class="full">Notes (optional) <input name="notes" type="text" placeholder="Channel, M-Pesa ref…" autocomplete="off" /></label>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" id="btn-cash-disburse-cancel">Cancel</button>
+            <button type="submit" class="btn btn-primary">Confirm sent</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" hidden></div>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
