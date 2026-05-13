@@ -66,6 +66,9 @@ const deviceIdentifiersDashboardRouter = require('./routes/device-identifiers-da
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 
+// Serve favicon + PWA manifest from /public at the root path
+app.use(express.static(path.join(__dirname, 'public')));
+
 // More specific paths first — otherwise /api/admin catches nested routes.
 app.use('/api/admin/collections', collectionsDashboardRouter);
 app.use('/api/admin/loanoverview', loanOverviewRouter);
@@ -102,9 +105,16 @@ app.use('/disbursement-blocklist', express.static(disbursementBlocklistDashboard
 app.use('/unpaid-invoices', express.static(unpaidInvoicesDashboardStatic));
 app.use('/device-identifiers', express.static(deviceIdentifiersDashboardStatic));
 
+const FAVICON_TAGS = `
+  <link rel="icon" href="/favicon.ico" sizes="any"/>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
+  <link rel="apple-touch-icon" href="/favicon-180x180.png"/>
+  <link rel="manifest" href="/site.webmanifest"/>
+  <meta name="theme-color" content="#008c89"/>`;
+
 app.get('/', (req, res) => {
   res.type('html').send(`<!DOCTYPE html>
-<html><head><meta charset="utf-8"/><title>Kopanow backend</title></head>
+<html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Kopanow</title>${FAVICON_TAGS}</head>
 <body style="font-family:system-ui;padding:2rem;">
   <h1>Kopanow</h1>
   <ul>
